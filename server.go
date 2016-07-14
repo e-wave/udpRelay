@@ -48,10 +48,11 @@ func receive_bytes(conn_sender *net.UDPConn, messages chan []byte){
 		}
 		if client_A == nil{
 			client_A = raddr
+			fmt.Println(raddr.String(), "connected (A)")
 		}
 
 		messages <- buffer[0:n]
-		fmt.Println(string(buffer[0:n]))
+		//fmt.Println(string(buffer[0:n]))
 	}
 }
 
@@ -60,8 +61,8 @@ func send_to_B(conn_receiver *net.UDPConn, clients_B map[string]*net.UDPAddr, me
 		msg := <-messages
 		// Loop send data from client A to all clients B
 		i := 0
-		for key, val := range clients_B{
-			_,err2 := conn_receiver.WriteToUDP(msg, val)  
+		for key, client := range clients_B{
+			_,err2 := conn_receiver.WriteToUDP(msg, client)  
 			if err2 != nil{
 				fmt.Println(key, err2)
 			}
@@ -101,8 +102,10 @@ func main(){
 		switch string(cmd_from_B[0:n]) {
 		    case "CONNECT":
 		        clients_B[raddr.String()] = raddr   // Adds the new connected client to the map
+		        fmt.Println(raddr.String(), "connected (B)") 
 		    case "DISCONNECT":
 		        delete(clients_B, raddr.String()) // Removes the disconnected client form the clientB list
+				fmt.Println(raddr.String(), "disconnected (B)")
 		}
 		//fmt.Println(clients_B)
 	}

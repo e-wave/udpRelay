@@ -79,7 +79,7 @@ func main() {
 		}
 		data_total += n
 		
-		fmt.Println(string(buffer[0:n]))
+		//fmt.Println(string(buffer[0:n]))
   	}
 
 }

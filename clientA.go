@@ -4,7 +4,6 @@ import (
   "fmt"
   "net"
   "time"
-   "strconv"
 )
 
 const PACKET_SIZE int = 1024
@@ -33,14 +32,11 @@ func main() {
   defer conn.Close()
 
   init_buffer(&buffer)
-  i := 0
   for {
-    msg := strconv.Itoa(i)
-    _,err := conn.Write([]byte(msg))  // Send packets to server every 100ms
+    _,err := conn.Write(buffer)  // Send packets to server every 100ms
     if err != nil {
         fmt.Println(err)
     }
-    i++
     time.Sleep(time.Millisecond * 100)
   }
 }
