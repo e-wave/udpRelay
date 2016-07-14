@@ -2,24 +2,28 @@ package main
 
 import (
 	"net"
-  "fmt"
-  "os"
+	"fmt"
+	"os"
 )
 
 // Constants
-const PORT_A string = "7777"  // port for single client A
-const PORT_B string = "8888"  // port for multiple clients B
-const PACKET_SIZE int = 1024  // packets size sent and received
+const(
+	PORT_A string = "7777"  // port for single client A
+	PORT_B string = "8888"  // port for multiple clients B
+	PACKET_SIZE int = 1024  // packets size sent and received
+)
 
 func main(){
 	fmt.Println("Starting server")
 
 	// Variables
 	var client_A *net.UDPAddr
-	// clients_B is a slice keeping all the clients B connected to the server
-	clients_B := make([]*net.UDPAddr, 0)  
+	// clients_B is a map keeping all the clients B connected to the server
+	clients_B := make(map[string]*net.UDPAddr, 0)
 	buffer := make([]byte, PACKET_SIZE)  // buffer will receive the data from A
 	cmd_from_B := make([]byte, 10)  // command sent by clients B CONNECT or DISCONNECT
+	//messages := make(chan string)
+
 	// UDPAddr used to create listeners
 	sender,_ := net.ResolveUDPAddr("udp", ":" + PORT_A)
 	receiver,_ := net.ResolveUDPAddr("udp", "127.0.0.1:" + PORT_B)
@@ -41,7 +45,9 @@ func main(){
 	defer conn_receiver.Close()
 
 
-	// Goroutine checking for new client B and appending them to the slice
+	// Goroutine checking for new client B and adding them to the map
+	// map clients_B keys are string representation of the udpaddr 
+	// and the value are the udpaddr object
 	go func() { 
 		for{
 			n,raddr,err := conn_receiver.ReadFromUDP(cmd_from_B)
@@ -51,16 +57,11 @@ func main(){
 			}
 			switch string(cmd_from_B[0:n]) {
 			    case "CONNECT":
-			        clients_B = append(clients_B, raddr)
+			        clients_B[raddr.String()] = raddr   // Adds the new connected client to the map
 			    case "DISCONNECT":
-			        for i,client := range clients_B{
-			        	if client.String() == raddr.String(){
-			        		clients_B = append(clients_B[:i], clients_B[i+1:]...)  // Removes the disconnected client form the clientB list
-			        		break
-			        	}
-			        }
+			        delete(clients_B, raddr.String()) // Removes the disconnected client form the clientB list
 			}
-
+			//fmt.Println(clients_B)
 		}
 	}()
 
@@ -74,7 +75,7 @@ func main(){
 			continue
 		}
 
-		// if not from same client then refuse
+		// If not from same client then refuse
 		if client_A != nil && raddr.String() != client_A.String(){
 			continue
 		}
@@ -86,10 +87,10 @@ func main(){
 
 		// Loop send data from client A to all clients B
 		i := 0
-		for i < len(clients_B){
-			_,err2 := conn_receiver.WriteToUDP(buffer, clients_B[i])  
+		for key, val := range clients_B{
+			_,err2 := conn_receiver.WriteToUDP(buffer, val)  
 			if err2 != nil{
-				fmt.Println(err2)
+				fmt.Println(key, err2)
 			}
 			i++
 		}

@@ -6,9 +6,12 @@ import (
   "time"
   "os"
 )
- 
-const PACKET_SIZE int = 1024
-const DROP_LIMIT float64 = 0.2  // 20%
+
+const(
+	PACKET_SIZE int = 1024
+	DROP_LIMIT float64 = 0.2  // 20%
+)
+
 
 func is_transmission_drop(data_amount int, data_amount_old int, uptime int) bool{
 	avg_total:= float64(data_amount)/float64(uptime)
