@@ -19,7 +19,7 @@ func main(){
 	// Variables
 	var client_A *net.UDPAddr
 	// clients_B is a map keeping all the clients B connected to the server
-	clients_B := make(map[string]*net.UDPAddr, 0)
+	clients_B := make(map[string]*net.UDPAddr)
 	buffer := make([]byte, PACKET_SIZE)  // buffer will receive the data from A
 	cmd_from_B := make([]byte, 10)  // command sent by clients B CONNECT or DISCONNECT
 	//messages := make(chan string)
